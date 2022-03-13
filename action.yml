@@ -1,0 +1,19 @@
+name: 'PR Review Labeler'
+description: 'PR Review Labeler'
+author: 'jsryu.dev'
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+  target-approved-count:
+    description: 'The target approved review count'
+    default: 2
+  label-to-be-added:
+    description: 'The GitHub label to be added when `target-approved-count` is reached' 
+    required: true
+  label-to-be-removed:
+    description: 'The GitHub label to be removed when `target-approved-count` is reached' 
+    required: false
+  
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
