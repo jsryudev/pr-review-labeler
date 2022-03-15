@@ -111,8 +111,10 @@ function getReviews(client, prNumber, state) {
         const reviews = [];
         try {
             for (var iterator_1 = __asyncValues(iterator), iterator_1_1; iterator_1_1 = yield iterator_1.next(), !iterator_1_1.done;) {
-                const { data: review } = iterator_1_1.value;
-                const targetReviews = review.filter(review => review.state === state || utils_1.States.APPROVED);
+                const { data: reviews } = iterator_1_1.value;
+                const targetReviews = reviews
+                    .filter(review => review.commit_id === github.context.sha)
+                    .filter(review => review.state === state || utils_1.States.APPROVED);
                 reviews.push(...targetReviews);
             }
         }

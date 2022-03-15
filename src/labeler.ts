@@ -80,10 +80,10 @@ async function getReviews(
 
   const reviews: unknown[] = [];
 
-  for await (const { data: review } of iterator) {
-    const targetReviews = review.filter(
-      review => review.state === state || States.APPROVED
-    );
+  for await (const { data: reviews } of iterator) {
+    const targetReviews = reviews
+      .filter(review => review.commit_id === github.context.sha)
+      .filter(review => review.state === state || States.APPROVED);
     reviews.push(...targetReviews);
   }
 
