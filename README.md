@@ -28,5 +28,5 @@ Various inputs are defined in [`action.yml`](action.yml)
 | - | - | - | - |
 | `repo-token` | Token to use to authorize label changes. Typically the GITHUB_TOKEN secret | N/A | N/A |
 | `target-approved-count` | The target approved review count | 2 | Y |
-| `label-to-be-added` | The path to the label configuration file | None | Y |
-| `label-to-be-removed` | Whether or not to remove labels when matching files are reverted or no longer changed by the PR | None | N |
+| `label-to-be-added` | The GitHub label to be added when `target-approved-count` is reached | None | Y |
+| `label-to-be-removed` | The GitHub label to be removed when `target-approved-count` is reached | None | N |
