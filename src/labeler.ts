@@ -19,8 +19,6 @@ export async function run() {
 
     const client = github.getOctokit(token);
 
-    console.log(`triggering action for pr: ${github.context.sha}`);
-
     const prNumber = getPrNumber();
     if (!prNumber) {
       console.log('Could not get pull request number from context, exiting');
@@ -33,6 +31,10 @@ export async function run() {
       pull_number: prNumber
     });
 
+    const head = pullRequest.head.sha;
+
+    console.log(`head commit for pr: ${head}`);
+
     if (pullRequest.state !== States.Open) {
       console.log('Pull request is not open, exiting');
       return;
@@ -43,7 +45,12 @@ export async function run() {
       return;
     }
 
-    const approvedReviews = await getReviews(client, prNumber, States.APPROVED);
+    const approvedReviews = await getReviews(
+      client,
+      prNumber,
+      head,
+      States.APPROVED
+    );
 
     if (approvedReviews.length >= riviewerCount) {
       await addLabels(client, prNumber, [labelToBeAdded]);
@@ -72,6 +79,7 @@ function getPrNumber(): number | undefined {
 async function getReviews(
   client: ClientType,
   prNumber: number,
+  head: string,
   state?: States
 ): Promise<unknown[]> {
   const iterator = client.paginate.iterator(client.rest.pulls.listReviews, {
@@ -86,7 +94,7 @@ async function getReviews(
     const targetReviews = reviews
       .filter(review => {
         console.log(`review.commit_id: ${review.commit_id}`);
-        return review.commit_id === github.context.sha;
+        return review.commit_id === head;
       })
       .filter(review => review.state === state || States.APPROVED);
     filteredReviews.push(...targetReviews);

@@ -58,7 +58,6 @@ function run() {
                 required: false
             });
             const client = github.getOctokit(token);
-            console.log(`triggering action for pr: ${github.context.sha}`);
             const prNumber = getPrNumber();
             if (!prNumber) {
                 console.log('Could not get pull request number from context, exiting');
@@ -69,6 +68,8 @@ function run() {
                 repo: github.context.repo.repo,
                 pull_number: prNumber
             });
+            const head = pullRequest.head.sha;
+            console.log(`head commit for pr: ${head}`);
             if (pullRequest.state !== utils_1.States.Open) {
                 console.log('Pull request is not open, exiting');
                 return;
@@ -77,7 +78,7 @@ function run() {
                 console.log('Pull request already has label, exiting');
                 return;
             }
-            const approvedReviews = yield getReviews(client, prNumber, utils_1.States.APPROVED);
+            const approvedReviews = yield getReviews(client, prNumber, head, utils_1.States.APPROVED);
             if (approvedReviews.length >= riviewerCount) {
                 yield addLabels(client, prNumber, [labelToBeAdded]);
                 if (labelToBeRemoved) {
@@ -101,7 +102,7 @@ function getPrNumber() {
     }
     return pullRequest.number;
 }
-function getReviews(client, prNumber, state) {
+function getReviews(client, prNumber, head, state) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
         const iterator = client.paginate.iterator(client.rest.pulls.listReviews, {
@@ -116,7 +117,7 @@ function getReviews(client, prNumber, state) {
                 const targetReviews = reviews
                     .filter(review => {
                     console.log(`review.commit_id: ${review.commit_id}`);
-                    return review.commit_id === github.context.sha;
+                    return review.commit_id === head;
                 })
                     .filter(review => review.state === state || utils_1.States.APPROVED);
                 filteredReviews.push(...targetReviews);
