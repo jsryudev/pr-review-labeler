@@ -58,6 +58,7 @@ function run() {
                 required: false
             });
             const client = github.getOctokit(token);
+            console.log(`triggering action for pr: ${github.context.sha}`);
             const prNumber = getPrNumber();
             if (!prNumber) {
                 console.log('Could not get pull request number from context, exiting');
@@ -108,14 +109,17 @@ function getReviews(client, prNumber, state) {
             repo: github.context.repo.repo,
             pull_number: prNumber
         });
-        const reviews = [];
+        const filteredReviews = [];
         try {
             for (var iterator_1 = __asyncValues(iterator), iterator_1_1; iterator_1_1 = yield iterator_1.next(), !iterator_1_1.done;) {
                 const { data: reviews } = iterator_1_1.value;
                 const targetReviews = reviews
-                    .filter(review => review.commit_id === github.context.sha)
+                    .filter(review => {
+                    console.log(`review.commit_id: ${review.commit_id}`);
+                    return review.commit_id === github.context.sha;
+                })
                     .filter(review => review.state === state || utils_1.States.APPROVED);
-                reviews.push(...targetReviews);
+                filteredReviews.push(...targetReviews);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -125,7 +129,8 @@ function getReviews(client, prNumber, state) {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        return reviews;
+        console.log(`found ${filteredReviews.length} reviews`);
+        return filteredReviews;
     });
 }
 function addLabels(client, prNumber, labels) {

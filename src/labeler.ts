@@ -19,6 +19,8 @@ export async function run() {
 
     const client = github.getOctokit(token);
 
+    console.log(`triggering action for pr: ${github.context.sha}`);
+
     const prNumber = getPrNumber();
     if (!prNumber) {
       console.log('Could not get pull request number from context, exiting');
@@ -78,16 +80,21 @@ async function getReviews(
     pull_number: prNumber
   });
 
-  const reviews: unknown[] = [];
+  const filteredReviews: unknown[] = [];
 
   for await (const { data: reviews } of iterator) {
     const targetReviews = reviews
-      .filter(review => review.commit_id === github.context.sha)
+      .filter(review => {
+        console.log(`review.commit_id: ${review.commit_id}`);
+        return review.commit_id === github.context.sha;
+      })
       .filter(review => review.state === state || States.APPROVED);
-    reviews.push(...targetReviews);
+    filteredReviews.push(...targetReviews);
   }
 
-  return reviews;
+  console.log(`found ${filteredReviews.length} reviews`);
+
+  return filteredReviews;
 }
 
 async function addLabels(
