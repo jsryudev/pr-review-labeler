@@ -13,7 +13,7 @@ jobs:
   labeler:
     runs-on: ubuntu-latest
     steps:
-    - uses: jsryudev/pr-review-labeler@v0.1.2
+    - uses: jsryudev/pr-review-labeler@v0.1.3
       with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           target-approved-count: 1
