@@ -80,7 +80,7 @@ async function getReviews(
   client: ClientType,
   prNumber: number,
   head: string,
-  state?: States
+  state: States
 ): Promise<unknown[]> {
   const iterator = client.paginate.iterator(client.rest.pulls.listReviews, {
     owner: github.context.repo.owner,
@@ -96,7 +96,10 @@ async function getReviews(
         console.log(`review.commit_id: ${review.commit_id}`);
         return review.commit_id === head;
       })
-      .filter(review => review.state === state || States.APPROVED);
+      .filter(review => {
+        console.log(`review.state: ${review.state}`);
+        return review.state === state
+      });
     filteredReviews.push(...targetReviews);
   }
 
