@@ -1,8 +1,8 @@
 {
-  "name": "auto-review-labeling",
-  "version": "1.0.0",
+  "name": "pr-review-labeler",
+  "version": "0.1.4",
   "private": true,
-  "description": "Auto PR Review Labeling",
+  "description": "Pull Request Review Labeler",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc && ncc build lib/main.js",
@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jsryudev/auto-review-labeling.git"
+    "url": "git+https://github.com/jsryudev/pr-review-labeler.git"
   },
   "keywords": [],
   "author": "jsryu.dev",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jsryudev/auto-review-labeling/issues"
+    "url": "https://github.com/jsryudev/pr-review-labeler/issues"
   },
-  "homepage": "https://github.com/jsryudev/auto-review-labeling#readme",
+  "homepage": "https://github.com/jsryudev/pr-review-labeler#readme",
   "dependencies": {
     "@actions/core": "^1.6.0",
     "@actions/github": "^5.0.0"
