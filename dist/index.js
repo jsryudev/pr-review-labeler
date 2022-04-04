@@ -119,7 +119,10 @@ function getReviews(client, prNumber, head, state) {
                     console.log(`review.commit_id: ${review.commit_id}`);
                     return review.commit_id === head;
                 })
-                    .filter(review => review.state === state || utils_1.States.APPROVED);
+                    .filter(review => {
+                    console.log(`review.state: ${review.state}`);
+                    return review.state === state;
+                });
                 filteredReviews.push(...targetReviews);
             }
         }
