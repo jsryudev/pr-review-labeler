@@ -69,16 +69,12 @@ function run() {
                 pull_number: prNumber
             });
             const head = pullRequest.head.sha;
-            console.log(`head commit for pr: ${head}`);
+            console.log(`Head SHA for Pull Reqeust: ${head}`);
             if (pullRequest.state !== utils_1.States.Open) {
-                console.log('Pull request is not open, exiting');
+                console.log('Pull Request is not open, exiting');
                 return;
             }
-            if (pullRequest.labels.find(l => l.name === labelToBeAdded)) {
-                console.log('Pull request already has label, exiting');
-                return;
-            }
-            const approvedReviews = yield getApprovedReviews(client, prNumber, pullRequest.head.sha);
+            const approvedReviews = yield getApprovedReviews(client, prNumber, head);
             if (approvedReviews.length >= riviewerCount) {
                 yield addLabels(client, prNumber, [labelToBeAdded]);
                 if (labelToBeRemoved) {
@@ -124,8 +120,8 @@ function getApprovedReviews(client, prNumber, headSHA) {
             for (var iterator_1 = __asyncValues(iterator), iterator_1_1; iterator_1_1 = yield iterator_1.next(), !iterator_1_1.done;) {
                 const { data: r } = iterator_1_1.value;
                 const targetReviews = r
-                    .filter(review => review.state === utils_1.States.APPROVED)
                     .filter(review => review.commit_id === headSHA)
+                    .filter(review => review.state === utils_1.States.APPROVED)
                     .filter(review => { var _a; return !reviewers.includes((_a = review.user) === null || _a === void 0 ? void 0 : _a.id); });
                 const targetReviewers = targetReviews
                     .filter(review => { var _a; return !!((_a = review.user) === null || _a === void 0 ? void 0 : _a.id); })
