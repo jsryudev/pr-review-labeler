@@ -45,11 +45,10 @@ export async function run() {
       return;
     }
 
-    const approvedReviews = await getReviews(
+    const approvedReviews = await getApprovedReviews(
       client,
       prNumber,
-      head,
-      States.APPROVED
+      pullRequest.head.sha
     );
 
     if (approvedReviews.length >= riviewerCount) {
@@ -58,6 +57,14 @@ export async function run() {
       if (labelToBeRemoved) {
         if (pullRequest.labels.find(l => l.name === labelToBeRemoved)) {
           await removeLabels(client, prNumber, [labelToBeRemoved]);
+        }
+      }
+    } else {
+      await addLabels(client, prNumber, [labelToBeRemoved]);
+
+      if (labelToBeAdded) {
+        if (pullRequest.labels.find(l => l.name === labelToBeAdded)) {
+          await removeLabels(client, prNumber, [labelToBeAdded]);
         }
       }
     }
@@ -76,11 +83,10 @@ function getPrNumber(): number | undefined {
   return pullRequest.number;
 }
 
-async function getReviews(
+async function getApprovedReviews(
   client: ClientType,
   prNumber: number,
-  head: string,
-  state: States
+  headSHA: string
 ): Promise<unknown[]> {
   const iterator = client.paginate.iterator(client.rest.pulls.listReviews, {
     owner: github.context.repo.owner,
@@ -88,24 +94,26 @@ async function getReviews(
     pull_number: prNumber
   });
 
-  const filteredReviews: unknown[] = [];
+  const reviews: unknown[] = [];
+  const reviewers: unknown[] = [];
 
-  for await (const { data: reviews } of iterator) {
-    const targetReviews = reviews
-      .filter(review => {
-        console.log(`review.commit_id: ${review.commit_id}`);
-        return review.commit_id === head;
-      })
-      .filter(review => {
-        console.log(`review.state: ${review.state}`);
-        return review.state === state
-      });
-    filteredReviews.push(...targetReviews);
+  for await (const { data: r } of iterator) {
+    const targetReviews = r
+      .filter(review => review.state === States.APPROVED)
+      .filter(review => review.commit_id === headSHA)
+      .filter(review => !reviewers.includes(review.user?.id));
+
+    const targetReviewers = targetReviews
+      .filter(review => !!review.user?.id)
+      .map(r => r.id);
+
+    reviews.push(...targetReviewers);
+    reviews.push(...targetReviews);
   }
 
-  console.log(`found ${filteredReviews.length} reviews`);
+  console.log(`found ${reviews.length} reviews`);
 
-  return filteredReviews;
+  return reviews;
 }
 
 async function addLabels(

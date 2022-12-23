@@ -78,12 +78,20 @@ function run() {
                 console.log('Pull request already has label, exiting');
                 return;
             }
-            const approvedReviews = yield getReviews(client, prNumber, head, utils_1.States.APPROVED);
+            const approvedReviews = yield getApprovedReviews(client, prNumber, pullRequest.head.sha);
             if (approvedReviews.length >= riviewerCount) {
                 yield addLabels(client, prNumber, [labelToBeAdded]);
                 if (labelToBeRemoved) {
                     if (pullRequest.labels.find(l => l.name === labelToBeRemoved)) {
                         yield removeLabels(client, prNumber, [labelToBeRemoved]);
+                    }
+                }
+            }
+            else {
+                yield addLabels(client, prNumber, [labelToBeRemoved]);
+                if (labelToBeAdded) {
+                    if (pullRequest.labels.find(l => l.name === labelToBeAdded)) {
+                        yield removeLabels(client, prNumber, [labelToBeAdded]);
                     }
                 }
             }
@@ -102,7 +110,7 @@ function getPrNumber() {
     }
     return pullRequest.number;
 }
-function getReviews(client, prNumber, head, state) {
+function getApprovedReviews(client, prNumber, headSHA) {
     var e_1, _a;
     return __awaiter(this, void 0, void 0, function* () {
         const iterator = client.paginate.iterator(client.rest.pulls.listReviews, {
@@ -110,20 +118,20 @@ function getReviews(client, prNumber, head, state) {
             repo: github.context.repo.repo,
             pull_number: prNumber
         });
-        const filteredReviews = [];
+        const reviews = [];
+        const reviewers = [];
         try {
             for (var iterator_1 = __asyncValues(iterator), iterator_1_1; iterator_1_1 = yield iterator_1.next(), !iterator_1_1.done;) {
-                const { data: reviews } = iterator_1_1.value;
-                const targetReviews = reviews
-                    .filter(review => {
-                    console.log(`review.commit_id: ${review.commit_id}`);
-                    return review.commit_id === head;
-                })
-                    .filter(review => {
-                    console.log(`review.state: ${review.state}`);
-                    return review.state === state;
-                });
-                filteredReviews.push(...targetReviews);
+                const { data: r } = iterator_1_1.value;
+                const targetReviews = r
+                    .filter(review => review.state === utils_1.States.APPROVED)
+                    .filter(review => review.commit_id === headSHA)
+                    .filter(review => { var _a; return !reviewers.includes((_a = review.user) === null || _a === void 0 ? void 0 : _a.id); });
+                const targetReviewers = targetReviews
+                    .filter(review => { var _a; return !!((_a = review.user) === null || _a === void 0 ? void 0 : _a.id); })
+                    .map(r => r.id);
+                reviews.push(...targetReviewers);
+                reviews.push(...targetReviews);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -133,8 +141,8 @@ function getReviews(client, prNumber, head, state) {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        console.log(`found ${filteredReviews.length} reviews`);
-        return filteredReviews;
+        console.log(`found ${reviews.length} reviews`);
+        return reviews;
     });
 }
 function addLabels(client, prNumber, labels) {
