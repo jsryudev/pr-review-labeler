@@ -127,7 +127,7 @@ function getApprovedReviews(client, prNumber, headSHA) {
                     .filter(review => { var _a; return !!((_a = review.user) === null || _a === void 0 ? void 0 : _a.id); })
                     .map(r => r.id);
                 reviews.push(...targetReviewers);
-                reviews.push(...targetReviews);
+                reviewers.push(...targetReviews);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
