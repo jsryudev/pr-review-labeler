@@ -99,7 +99,7 @@ async function getApprovedReviews(
       .map(r => r.id);
 
     reviews.push(...targetReviewers);
-    reviews.push(...targetReviews);
+    reviewers.push(...targetReviews);
   }
 
   console.log(`found ${reviews.length} reviews`);
